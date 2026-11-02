@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en" data-page="manage">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage — Haus of Wintër</title>
+<meta name="description" content="Site control panel.">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0c0c10">
+<link rel="canonical" href="https://hausofwinter.co/manage.html">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Haus of Wintër">
+<meta property="og:title" content="Manage — Haus of Wintër">
+<meta property="og:description" content="Site control panel.">
+<meta property="og:url" content="https://hausofwinter.co/manage.html">
+<meta property="og:image" content="https://hausofwinter.co/assets/img/og-default.jpg">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Manage — Haus of Wintër">
+<meta name="twitter:description" content="Site control panel.">
+<meta name="twitter:image" content="https://hausofwinter.co/assets/img/og-default.jpg">
+
+<link rel="icon" href="/assets/img/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800;900&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/css/styles.css">
+
+
+
+</head>
+<body data-page="manage">
+
+
+<style>
+  /* Manage panel is a standalone app-like page. */
+  body { background:#0d0d12; }
+  .mg-wrap { max-width: 980px; margin: 0 auto; padding: clamp(1rem,4vw,2rem); }
+  .mg-top { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding-block:1rem; border-bottom:1px solid var(--line); position:sticky; top:0; background:#0d0d12; z-index:10; }
+  .mg-top h1 { font-size:1.3rem; margin:0; }
+  .mg-status { font-size:.85rem; color:var(--ink-dim); }
+  .mg-status.ok { color:#6bd08a; } .mg-status.err { color:#e77; }
+  .mg-tabs { display:flex; flex-wrap:wrap; gap:.4rem; margin:1.2rem 0; }
+  .mg-tab { background:transparent; color:var(--ink-dim); border:1px solid var(--line); padding:.5rem 1rem; border-radius:999px; cursor:pointer; font:inherit; }
+  .mg-tab.is-active { background:var(--brand); color:var(--brand-ink); border-color:var(--brand); }
+  .mg-panel { display:none; } .mg-panel.is-active { display:block; }
+  .mg-field { display:grid; gap:.35rem; margin-bottom:1.1rem; }
+  .mg-field > label, .mg-label { font-size:.85rem; color:var(--ink-dim); }
+  .mg-field input, .mg-field textarea, .mg-field select {
+    width:100%; padding:.7rem .9rem; background:var(--bg-elev); color:var(--ink);
+    border:1px solid var(--line); border-radius:10px; font:inherit; }
+  .mg-field textarea { min-height:110px; resize:vertical; }
+  .mg-hint { font-size:.78rem; color:var(--ink-dim); }
+  .mg-row { display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; }
+  .mg-btn { padding:.6rem 1.1rem; border-radius:999px; border:1px solid var(--line); background:var(--bg-elev); color:var(--ink); cursor:pointer; font:inherit; }
+  .mg-btn.primary { background:var(--brand); color:var(--brand-ink); border-color:var(--brand); font-weight:600; }
+  .mg-btn.small { padding:.35rem .7rem; font-size:.8rem; }
+  .mg-list-item { border:1px solid var(--line); border-radius:12px; padding:1rem; margin-bottom:.8rem; background:var(--bg-elev); }
+  .mg-gate { max-width:360px; margin:12vh auto; text-align:center; }
+  .mg-photos { display:grid; gap:.7rem; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
+  .mg-photo { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--bg-elev); }
+  .mg-photo img { width:100%; aspect-ratio:1/1; object-fit:cover; pointer-events:none; user-select:none; -webkit-user-drag:none; }
+  .mg-photo.hidden { opacity:.4; }
+  .mg-photo .mg-photo-ctl { display:flex; gap:.3rem; padding:.4rem; flex-wrap:wrap; }
+  .mg-photo[draggable=true] { cursor:grab; }
+  .mg-photo.dragging { outline:2px dashed var(--brand); }
+  .mg-reorder-head { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; margin-bottom:.1rem; }
+  .mg-photo .mg-cap { width:100%; border:0; border-top:1px solid var(--line); background:transparent; color:var(--ink); font:inherit; font-size:.76rem; padding:.4rem .5rem; }
+  .mg-photo .mg-cap:focus { outline:2px solid var(--brand); outline-offset:-2px; }
+  .mg-photo .mg-move { padding:.2rem .5rem !important; font-size:.82rem; line-height:1; }
+  .mg-savebar { position:sticky; bottom:0; background:#0d0d12; border-top:1px solid var(--line); padding:1rem 0; margin-top:2rem; display:flex; gap:1rem; align-items:center; }
+  .mg-swatches { display:flex; flex-wrap:wrap; gap:1.2rem; }
+  .mg-swatch { display:grid; gap:.35rem; }
+  .mg-swatch input[type=color] { width:64px; height:40px; padding:2px; cursor:pointer; }
+  .mg-richbar { display:flex; flex-wrap:wrap; gap:.3rem; margin-bottom:.4rem; align-items:center; }
+  .mg-richbar .mg-btn.small { padding:.28rem .6rem; }
+  .mg-richbar select.mg-btn { padding:.28rem .5rem; }
+  .mg-richprev { border:1px dashed var(--line); border-radius:10px; padding:.6rem .85rem; margin:.45rem 0 0; background:var(--bg-elev); }
+  .mg-richprev p { margin:0 0 .5rem; } .mg-richprev p:last-child { margin-bottom:0; }
+</style>
+
+<div class="mg-wrap">
+  <!-- Passcode gate -->
+  <div class="mg-gate" data-gate hidden>
+    <h1>Haus of Winter — Manage</h1>
+    <p class="mg-hint">Enter the passcode to edit the live site.</p>
+    <div class="mg-field"><input type="password" data-gate-input placeholder="Passcode" autocomplete="off"></div>
+    <button class="mg-btn primary" data-gate-go>Unlock</button>
+    <p class="mg-status err" data-gate-err></p>
+  </div>
+
+  <!-- App (revealed after unlock) -->
+  <div data-app hidden>
+    <div class="mg-top">
+      <h1>Manage · Haus of Winter</h1>
+      <span class="mg-status" data-status>Loading…</span>
+    </div>
+
+    <div class="mg-tabs" data-tabs>
+      <button class="mg-tab is-active" data-tab="home">Home</button>
+      <button class="mg-tab" data-tab="about">About</button>
+      <button class="mg-tab" data-tab="classes">Classes</button>
+      <button class="mg-tab" data-tab="lessons">1-to-1</button>
+      <button class="mg-tab" data-tab="shop">Shop</button>
+      <button class="mg-tab" data-tab="reviews">Reviews</button>
+      <button class="mg-tab" data-tab="blog">Blog</button>
+      <button class="mg-tab" data-tab="gallery">Gallery</button>
+      <button class="mg-tab" data-tab="contact">Contact</button>
+      <button class="mg-tab" data-tab="faq">FAQ</button>
+      <button class="mg-tab" data-tab="footer">Footer</button>
+      <button class="mg-tab" data-tab="appearance">Appearance</button>
+      <button class="mg-tab" data-tab="pages">Pages</button>
+      <button class="mg-tab" data-tab="reorder">Reorder galleries</button>
+      <button class="mg-tab" data-tab="upload">Upload photos</button>
+    </div>
+
+    <!-- HOME -->
+    <section class="mg-panel is-active" data-panel="home">
+      <div class="mg-field"><label>Title (big heading)</label><input data-bind="home.headline"></div>
+      <div class="mg-field"><label>Description (under the title)</label><input data-bind="home.subhead"></div>
+      <div class="mg-field"><label>Welcome paragraph</label><textarea data-bind="home.intro" data-rich></textarea></div>
+      <div class="mg-field"><label>Primary button label</label><input data-bind="home.primaryCtaLabel"></div>
+      <div class="mg-field"><label>Secondary button label</label><input data-bind="home.secondaryCtaLabel"></div>
+      <div class="mg-field"><label>Logo size (0.6–1.6)</label><input type="number" step="0.05" min="0.6" max="1.6" data-bind="home.logoScale"></div>
+      <div class="mg-row">
+        <div class="mg-field" style="flex:1;min-width:150px"><label>Title size (0.5–2.5)</label><input type="number" step="0.05" min="0.5" max="2.5" data-bind="home.headlineScale"></div>
+        <div class="mg-field" style="flex:1;min-width:150px"><label>Description size (0.6–2)</label><input type="number" step="0.05" min="0.6" max="2" data-bind="home.subheadScale"></div>
+      </div>
+      <label class="mg-label">Title &amp; text position on the banner</label>
+      <div class="mg-row" style="margin:.3rem 0 1rem">
+        <div class="mg-field" style="flex:1;min-width:150px"><label>Up / down</label>
+          <select data-bind="home.heroVAlign"><option value="top">Top</option><option value="center">Middle</option><option value="bottom">Bottom</option></select></div>
+        <div class="mg-field" style="flex:1;min-width:150px"><label>Left / right</label>
+          <select data-bind="home.heroHAlign"><option value="left">Left</option><option value="center">Centre</option><option value="right">Right</option></select></div>
+      </div>
+      <div class="mg-field"><label>Banner type</label>
+        <select data-bind="home.heroMode"><option value="image">Image</option><option value="video">Video</option></select></div>
+      <div class="mg-field"><label>Banner image</label>
+        <div class="mg-row">
+          <input data-bind="home.heroImage" placeholder="Upload below, or paste a Cloudinary ID / URL" style="flex:1">
+          <label class="mg-btn small" style="cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center">Upload image<input type="file" accept="image/*" data-upload-target="home.heroImage" hidden></label>
+        </div>
+        <span class="mg-hint" data-upload-status="home.heroImage">Uploads straight to Cloudinary, then click Save changes.</span></div>
+      <div class="mg-field"><label>Banner video (mp4)</label>
+        <input data-bind="home.heroVideo" placeholder="Cloudinary public_id or full URL"></div>
+      <div class="mg-field"><label>Banner image opacity (0.2 = dark · 1 = full)</label>
+        <input type="number" min="0.2" max="1" step="0.05" data-bind="home.heroOpacity">
+        <span class="mg-hint">How visible the banner photo/video is behind the title. Lower = darker.</span></div>
+      <label class="mg-label" style="margin-top:1.2rem">Feature cards (the boxes lower down the home page)</label>
+      <div data-cards-editor></div>
+      <button class="mg-btn small" data-add-card>+ Add card</button>
+      <p class="mg-hint" style="margin:.4rem 0 0">Each card has a title, a short description and where it links to. Add or remove as many as you like.</p>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="mg-panel" data-panel="about">
+      <div class="mg-field"><label>Heading</label><input data-bind="about.heading"></div>
+      <label class="mg-label">Photos (shown in a row at the top)</label>
+      <div data-about-photos-editor></div>
+      <button class="mg-btn small" data-add-about-photo>+ Add photo</button>
+      <p class="mg-hint" style="margin:.4rem 0 1.4rem">Upload or change each image and its caption. Add as many as you like.</p>
+      <div class="mg-field"><label>Body (blank line = new paragraph)</label><textarea data-bind="about.body" rows="10" data-rich></textarea></div>
+    </section>
+
+    <!-- LESSONS (1-to-1) -->
+    <section class="mg-panel" data-panel="lessons">
+      <p class="mg-hint" style="margin-bottom:1rem">The Private 1-to-1 lessons page. To hide it from the site, use the <strong>Pages</strong> tab.</p>
+      <div class="mg-field"><label>Heading</label><input data-bind="lessons.heading"></div>
+      <div class="mg-field"><label>Intro (one or two lines under the heading)</label><textarea data-bind="lessons.intro" rows="3" data-rich></textarea></div>
+      <div class="mg-field"><label>Photo</label>
+        <div class="mg-row">
+          <input data-bind="lessons.photo" placeholder="Upload below, or paste a Cloudinary ID / URL" style="flex:1">
+          <label class="mg-btn small" style="cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center">Upload image<input type="file" accept="image/*" data-upload-target="lessons.photo" hidden></label>
+        </div>
+        <span class="mg-hint" data-upload-status="lessons.photo">Uploads straight to Cloudinary, then click Save changes.</span></div>
+      <div class="mg-field"><label>Body (blank line = new paragraph)</label><textarea data-bind="lessons.body" rows="9" data-rich></textarea></div>
+      <div class="mg-row">
+        <div class="mg-field" style="flex:2;min-width:160px"><label>Button label</label><input data-bind="lessons.ctaLabel" placeholder="Enquire about 1-to-1s"></div>
+        <div class="mg-field" style="flex:2;min-width:160px"><label>Button links to</label><input data-bind="lessons.ctaUrl" placeholder="/contact.html"></div>
+      </div>
+    </section>
+
+    <!-- CLASSES -->
+    <section class="mg-panel" data-panel="classes">
+      <div class="mg-field"><label>Heading</label><input data-bind="classes.heading"></div>
+      <div class="mg-field"><label>Schedule intro</label><textarea data-bind="classes.intro" data-rich></textarea></div>
+      <div class="mg-field"><label>Class descriptions</label><textarea data-bind="classes.descriptions" rows="8" data-rich></textarea></div>
+
+      <div class="mg-field"><label>Bookwhen calendar feed URL (auto-syncs the month calendar)</label>
+        <input data-bind="classes.feedUrl" placeholder="https://feeds.bookwhen.com/ical/…/public.ics">
+        <span class="mg-hint">In Bookwhen: <strong>Settings → Schedule pages → Calendar feeds</strong> → copy the <strong>Public</strong> feed link and paste it here. The month calendar then shows your real events and updates whenever you change Bookwhen — future weeks only appear once you've scheduled them. Leave blank to use the fixed weekly pattern below instead.</span></div>
+
+      <label class="mg-label">Weekly classes (fallback — used only when no feed URL above)</label>
+      <div data-weekly-editor></div>
+      <button class="mg-btn small" data-add-weekly>+ Add class day</button>
+      <p class="mg-hint" style="margin:.4rem 0 1.4rem">These highlight recurring days when no Bookwhen feed is set. Booking always comes from the widget below.</p>
+
+      <div class="mg-field"><label>Booking embed code (iframe)</label>
+        <textarea data-bind="classes.bookingEmbed" rows="6"></textarea>
+        <span class="mg-hint">Paste your Bookwhen / Calendly / TeamUp iframe embed here.</span></div>
+    </section>
+
+    <!-- SHOP -->
+    <section class="mg-panel" data-panel="shop">
+      <div class="mg-field"><label>Heading</label><input data-bind="shop.heading"></div>
+      <div class="mg-field"><label>Shop intro</label><textarea data-bind="shop.intro" data-rich></textarea></div>
+      <div class="mg-field"><label>Store embed code</label>
+        <textarea data-bind="shop.storeEmbed" rows="8"></textarea>
+        <span class="mg-hint">Paste your Ecwid / Square store embed (incl. its &lt;script&gt;) here.</span></div>
+    </section>
+
+    <!-- REVIEWS (dynamic list) -->
+    <section class="mg-panel" data-panel="reviews">
+      <div class="mg-field"><label>Section heading</label><input data-bind="reviews.heading"></div>
+      <div data-reviews-editor></div>
+      <button class="mg-btn small" data-add-review>+ Add review</button>
+    </section>
+
+    <!-- BLOG (posts) -->
+    <section class="mg-panel" data-panel="blog">
+      <div class="mg-field"><label>Section heading</label><input data-bind="blog.heading"></div>
+      <div class="mg-field"><label>Intro</label><input data-bind="blog.intro"></div>
+      <div data-blog-editor></div>
+      <button class="mg-btn small" data-add-post>+ Add post</button>
+    </section>
+
+    <!-- GALLERY (rename/hide categories) -->
+    <section class="mg-panel" data-panel="gallery">
+      <p class="mg-hint">Rename, reorder or hide gallery categories. The slug is the Cloudinary tag suffix —
+        it combines with the gallery tag prefix from your config (e.g. slug <code>classes</code>).</p>
+      <div data-categories-editor></div>
+      <button class="mg-btn small" data-add-category>+ Add category</button>
+
+      <div style="margin-top:1.6rem">
+        <label class="mg-label">Featured videos</label>
+        <p class="mg-hint" style="margin:.3rem 0 .8rem">These appear on the dedicated <strong>Videos</strong> page (separate from photos). Give each one a title. YouTube/Vimeo play inline; Instagram/TikTok links open in a new tab; Cloudinary video IDs (or direct .mp4 URLs) play inline.</p>
+        <div data-videos-editor></div>
+        <button class="mg-btn small" data-add-video>+ Add video</button>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="mg-panel" data-panel="contact">
+      <div class="mg-field"><label>Heading</label><input data-bind="contact.heading"></div>
+      <div class="mg-field"><label>Intro</label><textarea data-bind="contact.intro" data-rich></textarea></div>
+      <div class="mg-field"><label>Email (form + display)</label><input data-bind="contact.email"></div>
+      <div class="mg-field"><label>Phone</label><input data-bind="contact.phone"></div>
+      <div class="mg-field"><label>WhatsApp number</label><input data-bind="contact.whatsapp" placeholder="+44…"></div>
+      <div class="mg-field"><label>Address (shown on Contact + FAQ map)</label><input data-bind="contact.address"></div>
+      <div class="mg-field"><label>Map pin (lat,long — most accurate — or leave as address)</label>
+        <input data-bind="contact.mapQuery" placeholder="52.966615,-1.180463">
+        <span class="mg-hint">Coordinates drop an exact pin. Find them: right-click your spot in Google Maps → the numbers at the top.</span></div>
+      <div class="mg-field"><label>Instagram URL</label><input data-bind="contact.socials.instagram"></div>
+      <div class="mg-field"><label>TikTok URL</label><input data-bind="contact.socials.tiktok"></div>
+      <div class="mg-field"><label>Facebook URL</label><input data-bind="contact.socials.facebook"></div>
+      <div class="mg-field"><label>YouTube URL</label><input data-bind="contact.socials.youtube"></div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="mg-panel" data-panel="faq">
+      <div class="mg-field"><label>Heading</label><input data-bind="faq.heading"></div>
+      <label class="mg-label" style="margin-top:1rem">Questions &amp; answers</label>
+      <div data-faq-editor></div>
+      <button class="mg-btn small" data-add-faq>+ Add question</button>
+      <p class="mg-hint" style="margin:.4rem 0 0">Edit any question or answer, reorder isn't needed — they show in this order. Add or remove as many as you like. (The FAQ page also shows your address + map, pulled from the Contact tab.)</p>
+    </section>
+
+    <!-- FOOTER -->
+    <section class="mg-panel" data-panel="footer">
+      <div class="mg-field"><label>Footer tagline (the small line under the logo)</label>
+        <input data-bind="footer.tagline"></div>
+      <div class="mg-field"><label>Copyright line (after the © year)</label>
+        <input data-bind="footer.copyright"></div>
+      <label class="mg-label" style="margin-top:1.2rem">Footer buttons</label>
+      <div data-footer-editor></div>
+      <button class="mg-btn small" data-add-flink>+ Add button</button>
+      <p class="mg-hint" style="margin:.4rem 0 0">Rename a button, change where it links, or add and remove buttons. These show across every page's footer.</p>
+
+      <label class="mg-label" style="margin-top:1.6rem">Newsletter signup</label>
+      <div class="mg-field">
+        <label class="mg-row" style="gap:.5rem;align-items:center"><input type="checkbox" data-bind="footer.newsletter.enabled"> Show a newsletter signup in the footer</label>
+      </div>
+      <div class="mg-field"><label>Heading</label><input data-bind="footer.newsletter.heading" placeholder="Join the Haus mailing list"></div>
+      <div class="mg-field"><label>Short text</label><input data-bind="footer.newsletter.text" placeholder="Sign up for class drops, showcase news and updates."></div>
+      <div class="mg-field"><label>Button label</label><input data-bind="footer.newsletter.buttonLabel" placeholder="Sign up"></div>
+      <p class="mg-hint" style="margin:0 0 1rem">By default each signup is emailed to your Contact email, so you can add them to your list. Prefer Mailchimp/another service? Paste its signup embed below and it replaces the built-in form.</p>
+      <div class="mg-field"><label>Mailchimp / other embed (optional)</label><textarea data-bind="footer.newsletter.embed" rows="4" placeholder="Leave blank to use the built-in form."></textarea></div>
+
+      <label class="mg-label" style="margin-top:1rem">Save signups to a Google Sheet (optional)</label>
+      <p class="mg-hint" style="margin:.3rem 0 .7rem">Every signup can also be saved to a Google Sheet so you can export the list and email people later. Make a Google Form with one “Email” question (its responses go to a Sheet), then paste the two values below. Ask me and I’ll walk you through it or set it up for you.</p>
+      <div class="mg-field"><label>Google Form response URL</label><input data-bind="footer.newsletter.googleFormAction" placeholder="https://docs.google.com/forms/d/e/…/formResponse"></div>
+      <div class="mg-field"><label>Email field ID</label><input data-bind="footer.newsletter.googleFormField" placeholder="entry.123456789"></div>
+    </section>
+
+    <!-- APPEARANCE: theme, colours, fonts -->
+    <section class="mg-panel" data-panel="appearance">
+      <div class="mg-field"><label>Quick theme</label>
+        <div class="mg-row">
+          <button type="button" class="mg-btn small" data-theme-preset="light">☀ Light (bright)</button>
+          <button type="button" class="mg-btn small" data-theme-preset="dark">🌙 Dark</button>
+        </div>
+        <span class="mg-hint">Pick a starting point, then fine-tune the colours and fonts below. Changes go live after you click <strong>Save changes</strong>.</span>
+      </div>
+
+      <label class="mg-label" style="margin-top:1rem">Area colours — each one changes only that area</label>
+      <div class="mg-swatches" style="margin:.5rem 0 1.2rem">
+        <label class="mg-swatch">Top bar (header)<input type="color" data-theme="headerBg"></label>
+        <label class="mg-swatch">Footer<input type="color" data-theme="footerBg"></label>
+        <label class="mg-swatch">Page background<input type="color" data-theme="bg"></label>
+        <label class="mg-swatch">Section bands<input type="color" data-theme="sectionBg"></label>
+        <label class="mg-swatch">Cards &amp; boxes<input type="color" data-theme="cardBg"></label>
+      </div>
+      <p class="mg-hint" style="margin:-.6rem 0 1.2rem">Tip: to make the top bar match the footer, give them the same colour. Text colours inside the top bar and footer adjust automatically so they stay readable.</p>
+
+      <label class="mg-label">Text &amp; accents</label>
+      <div class="mg-swatches" style="margin:.5rem 0 1.2rem">
+        <label class="mg-swatch">Body text<input type="color" data-theme="ink"></label>
+        <label class="mg-swatch">Accent 1 (buttons)<input type="color" data-theme="brand"></label>
+        <label class="mg-swatch">Accent 2 (links)<input type="color" data-theme="brand2"></label>
+      </div>
+
+      <div class="mg-field">
+        <label class="mg-row" style="gap:.5rem;align-items:center"><input type="checkbox" data-theme-heading-solid> Use one solid colour for headings <span class="mg-hint">(otherwise headings use a gradient of the two accent colours)</span></label>
+      </div>
+      <div class="mg-swatches" data-heading-color-wrap style="margin:0 0 1.2rem">
+        <label class="mg-swatch">Heading colour<input type="color" data-theme="headingColor"></label>
+      </div>
+
+      <label class="mg-label">Fonts</label>
+      <div class="mg-row" style="gap:1.2rem;margin-top:.5rem">
+        <div class="mg-field" style="flex:1;min-width:190px"><label>Heading font</label><select data-theme="fontHead"></select></div>
+        <div class="mg-field" style="flex:1;min-width:190px"><label>Body font</label><select data-theme="fontBody"></select></div>
+      </div>
+      <p class="mg-hint" style="margin:.2rem 0 0">Keep body text and the page background high-contrast (dark on light, or light on dark) so it stays easy to read. To colour or restyle just a few words, use the styling toolbar above the text boxes on the Home, About, Classes, Shop, Contact, Blog and FAQ tabs.</p>
+    </section>
+
+    <!-- PAGES: hide / show -->
+    <section class="mg-panel" data-panel="pages">
+      <p class="mg-hint" style="margin-bottom:1rem">Tick a page to <strong>hide it</strong> while you work on it. Hidden pages disappear from the top menu and the footer, and anyone who opens the link directly is sent to the home page. You can still preview a hidden page yourself by adding <code>?preview=1</code> to its web address (e.g. <code>/shop.html?preview=1</code>). Remember to click <strong>Save changes</strong>.</p>
+      <div data-pages-editor></div>
+    </section>
+
+    <!-- REORDER GALLERIES -->
+    <section class="mg-panel" data-panel="reorder">
+      <div class="mg-field"><label>Category to arrange</label><select data-reorder-cat></select></div>
+      <p class="mg-hint">Every photo in the category shows here — the built-in starter photos and the ones you’ve
+        uploaded. Drag photos to reorder, set a focal position, or <strong>Delete</strong> one to remove it from the
+        site (click <strong>Restore</strong> to bring it back — nothing is lost). Changes save with the button below.</p>
+      <div class="mg-photos" data-reorder-grid></div>
+    </section>
+
+    <!-- UPLOAD PHOTOS -->
+    <section class="mg-panel" data-panel="upload">
+      <div class="mg-field"><label>Upload to category</label><select data-upload-cat></select></div>
+      <div class="mg-field"><label>Choose image(s)</label><input type="file" accept="image/*" multiple data-upload-input></div>
+      <button class="mg-btn primary" data-upload-go>Upload</button>
+      <p class="mg-hint">Uploads go straight to Cloudinary (unsigned) tagged for that category, and appear in the gallery on next load.
+        Category <code>banner</code> is handy for hero images.</p>
+      <div class="mg-photos" data-upload-preview></div>
+    </section>
+
+    <div class="mg-savebar">
+      <button class="mg-btn primary" data-save>Save changes</button>
+      <span class="mg-status" data-save-status></span>
+      <span class="mg-hint" style="margin-left:auto">Live site updates within ~1 min.</span>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/config.js"></script>
+<script src="/assets/js/content.js"></script>
+<script src="/assets/js/manage.js"></script>
+
+
+</body>
+</html>

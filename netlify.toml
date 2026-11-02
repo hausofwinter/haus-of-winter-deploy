@@ -1,0 +1,7 @@
+# Netlify build config for Haus of Wintër.
+# Static site published from the repo root. On a Git/CLI deploy, Netlify bundles
+# the edge function in netlify/edge-functions/ (which powers per-post blog social
+# previews). Edge-function routing is declared inline in blog-og.js.
+[build]
+  publish = "."
+  command = ""

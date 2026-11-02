@@ -1,0 +1,9 @@
+# Netlify redirects
+/manage /manage.html 200
+# Same-origin proxy for the Bookwhen iCal feed (avoids browser CORS blocks)
+/bw/* https://feeds.bookwhen.com/:splat 200
+# Clean blog URLs. The edge function (netlify/edge-functions/blog-og.js) adds
+# per-post social-preview tags; these rewrites are the fallback so /blog and
+# /blog/<slug> always load the blog page even if the edge function is off.
+/blog            /blog.html  200
+/blog/*          /blog.html  200
