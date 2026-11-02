@@ -7,7 +7,7 @@ window.HW_CONFIG = {
   "contentTag": "hw_content",
   "galleryTagPrefix": "hw_gallery_",
   "managePasscode": "WinterHaus-2026",
-  "ga4Id": "",
+  "ga4Id": "G-ZKQTGJ51V2",
   "formSubmitEmail": "hausofwinter@hotmail.com",
   "defaultEmbeds": {
     "bookwhen": "<!-- PASTE YOUR BOOKING IFRAME HERE (Bookwhen / Calendly / TeamUp). Placeholder shown until you do. -->\n<div style=\"padding:2rem;border:1px dashed #444;border-radius:12px;text-align:center;color:#a6a7b0\">Booking widget goes here — paste your Bookwhen embed in /manage → Classes → Booking embed code.</div>",

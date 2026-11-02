@@ -160,6 +160,7 @@
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val)) { show("Please enter a valid email address.", false); return; }
       // Save to the Google Sheet first (works even if the email alert isn't set up).
       saveToGoogleForm(nl, val);
+      trackEvent("newsletter_signup", {});
       var hasForm = !!email, hasSheet = !!(nl && nl.googleFormAction && nl.googleFormField);
       if (!hasForm && !hasSheet) { show("Newsletter isn’t set up yet.", false); return; }
       var btn = form.querySelector("button"); btn.disabled = true;
@@ -966,12 +967,10 @@
   }
 
   /* ---- Boot -------------------------------------------------------------- */
-  // Lightweight analytics loader. Reads HW_CONFIG.ga4Id (a GA4 "G-XXXXXXX" id).
-  // Stays completely inert until an id is set in assets/js/config.js, so there is
-  // no tracking, no cookies and no performance cost until you opt in.
-  function initAnalytics() {
-    var id = (CFG.ga4Id || "").trim();
-    if (!/^G-[A-Z0-9]+$/i.test(id)) return;
+  // Analytics (Google Analytics 4). Reads HW_CONFIG.ga4Id. Cookie-consent aware:
+  // GA is loaded only after the visitor accepts (or if they accepted before).
+  function loadGA(id) {
+    if (global.gtag) return;
     var sc = document.createElement("script");
     sc.async = true;
     sc.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(id);
@@ -982,9 +981,67 @@
     gtag("js", new Date());
     gtag("config", id, { anonymize_ip: true });
   }
+  function consentChoice() { try { return localStorage.getItem("hw_consent"); } catch (e) { return null; } }
+  function initAnalytics() {
+    var id = (CFG.ga4Id || "").trim();
+    if (!/^G-[A-Z0-9]+$/i.test(id)) return;            // no id set → nothing loads
+    var choice = consentChoice();
+    if (choice === "granted") { loadGA(id); return; }  // already accepted
+    if (choice === "denied") return;                   // already declined → no GA, no banner
+    showConsentBanner(id);                             // undecided → ask first
+  }
+  function showConsentBanner(id) {
+    if (!document.body) return;
+    var bar = document.createElement("div");
+    bar.className = "cookie-consent";
+    bar.setAttribute("role", "dialog");
+    bar.setAttribute("aria-label", "Cookie notice");
+    bar.innerHTML =
+      "<p>We use a few cookies to see how people use the site — never anything personal. Happy to allow it?</p>" +
+      "<div class='cookie-consent-btns'>" +
+        "<button type='button' data-consent='deny' class='btn btn-ghost'>Decline</button>" +
+        "<button type='button' data-consent='allow' class='btn btn-primary'>Accept</button>" +
+      "</div>";
+    document.body.appendChild(bar);
+    bar.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("[data-consent]");
+      if (!b) return;
+      var allow = b.getAttribute("data-consent") === "allow";
+      try { localStorage.setItem("hw_consent", allow ? "granted" : "denied"); } catch (e2) {}
+      bar.parentNode && bar.parentNode.removeChild(bar);
+      if (allow) loadGA(id);
+    });
+  }
+
+  // Fire a GA4 event (silent no-op until a ga4Id is set in config.js).
+  function trackEvent(name, params) {
+    try { if (typeof global.gtag === "function") global.gtag("event", name, params || {}); } catch (e) {}
+  }
+  // Track the actions that matter for a dance school: booking intent, shares,
+  // social + contact clicks. (Enquiries = /thankyou.html pageview; newsletter
+  // signups fire their own event below.)
+  function initEventTracking() {
+    document.addEventListener("click", function (e) {
+      var el = e.target.closest && e.target.closest("a, [data-book], button");
+      if (!el) return;
+      var a = e.target.closest("a");
+      var href = (a && a.getAttribute("href")) || "";
+      var label = (el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 60);
+      if (/^tel:/i.test(href)) return trackEvent("contact_phone", { label: href.replace(/^tel:/i, "") });
+      if (/^mailto:/i.test(href)) return trackEvent("contact_email", {});
+      if (el.closest(".blog-share")) return trackEvent("blog_share", { method: el.getAttribute("aria-label") || label });
+      if (el.matches("[data-cta-primary]")) return trackEvent("cta_book_class", { label: label });
+      if (el.closest("[data-book]")) return trackEvent("book_slot_click", { label: label });
+      if (/bookwhen\.com/i.test(href)) return trackEvent("book_click", { label: href });
+      if (/instagram\.com|tiktok\.com/i.test(href)) return trackEvent("social_click", { network: /instagram/i.test(href) ? "instagram" : "tiktok" });
+      if (el.matches("[data-cta-secondary]")) return trackEvent("cta_shop", { label: label });
+      if (el.matches("[data-lessons-cta]")) return trackEvent("cta_lessons", { label: label });
+    }, true);
+  }
 
   function boot() {
     initAnalytics();
+    initEventTracking();
     initChrome();
     var page = document.body.getAttribute("data-page");
     // Early pass from the cached content so hidden pages don't flash before the

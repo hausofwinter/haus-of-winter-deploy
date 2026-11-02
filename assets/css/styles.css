@@ -457,3 +457,17 @@ html.lb-open { overflow: hidden; }
 .hero-content h1 { letter-spacing: -.01em; }
 .hero-content .lead { margin-inline: auto; text-shadow: 0 1px 16px rgba(0,0,0,.6); }
 .hero-cta { margin-top: 1.9rem; }
+
+/* Cookie-consent notice (shown until the visitor accepts/declines) */
+.cookie-consent {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 16px; z-index: 9999;
+  width: min(560px, calc(100vw - 24px));
+  display: flex; flex-wrap: wrap; align-items: center; gap: .75rem;
+  background: var(--bg-elev, #15151b); color: var(--ink, #f4f5f7);
+  border: 1px solid var(--line, rgba(127,127,127,.28)); border-radius: 14px;
+  padding: .9rem 1.05rem; box-shadow: 0 12px 44px rgba(0,0,0,.42);
+}
+.cookie-consent p { margin: 0; flex: 1 1 240px; font-size: .9rem; line-height: 1.45; }
+.cookie-consent-btns { display: flex; gap: .5rem; margin-left: auto; }
+.cookie-consent .btn { padding: .5rem .95rem; font-size: .85rem; }
+@media (max-width: 420px) { .cookie-consent-btns { width: 100%; } .cookie-consent-btns .btn { flex: 1; } }
